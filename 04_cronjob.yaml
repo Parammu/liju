@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hello-cronjob
+spec:
+  schedule: "*/1 * * * *"  # Every 1 minute
+  timeZone: "Asia/Kolkata"  # Optional - Specifies the timezone here as IANA Zone Identifier.
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 30
+      completions: 2
+      parallelism: 2
+      backoffLimit: 2
+      template:
+        spec:
+          containers:
+            - name: hello
+              image: sureshtamizan/hello-job:v1 
+          restartPolicy: Never  

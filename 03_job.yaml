@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello-job
+spec:
+  ttlSecondsAfterFinished: 30
+  completions: 3
+  parallelism: 2
+  backoffLimit: 2
+  template:
+    spec:
+      containers:
+        - name: hello-job
+          image: sureshtamizan/hello-job:v1
+      restartPolicy: Never
+
+
+      
