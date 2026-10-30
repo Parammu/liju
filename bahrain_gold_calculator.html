@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b35">
+<title>Bahrain Gold Calculator</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#172522;background:#f3f6f4}
+*{box-sizing:border-box}body{margin:0;padding:18px;max-width:620px;margin-inline:auto}
+header{background:#123b35;color:#fff;padding:20px;border-radius:18px;margin-bottom:16px}
+h1{font-size:23px;margin:0 0 5px}header p{margin:0;color:#d7e7e2;font-size:13px}
+.card{background:#fff;border:1px solid #dce6e1;border-radius:16px;padding:16px;margin:12px 0}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
+input,select{width:100%;padding:13px;border:1px solid #cbd8d1;border-radius:10px;font-size:16px;background:#fff;color:#172522}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{background:#176b55;color:#fff;width:100%;margin-top:16px}
+.secondary{background:#eaf1ed;color:#173b31;width:100%;margin-top:9px}
+.result{background:#123b35;color:white;border-radius:14px;padding:17px;margin-top:14px}
+.result small{color:#d7e7e2}.total{font-size:32px;font-weight:800;margin:4px 0 12px}
+.line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #ffffff25;font-size:14px}
+.line:last-child{border:0}.hint{font-size:12px;color:#64756e;line-height:1.5}
+.pill{display:inline-block;background:#e4f1eb;color:#17523f;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700}
+@media(max-width:380px){.grid{grid-template-columns:1fr}.total{font-size:28px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Bahrain Gold Calculator</h1>
+  <p>Jewellery estimate · BHD · Works offline</p>
+</header>
+
+<div class="card">
+  <span class="pill">ENTER SHOP QUOTE DETAILS</span>
+  <div class="grid">
+    <div>
+      <label for="purity">Gold purity</label>
+      <select id="purity">
+        <option>18K</option><option>21K</option><option selected>22K</option><option>24K</option>
+      </select>
+    </div>
+    <div>
+      <label for="weight">Weight (grams)</label>
+      <input id="weight" type="number" min="0" step="0.001" value="10" inputmode="decimal">
+    </div>
+  </div>
+  <label for="rate">Gold rate (BHD per gram)</label>
+  <input id="rate" type="number" min="0" step="0.001" value="46.20" inputmode="decimal">
+  <div class="grid">
+    <div>
+      <label for="making">Making charge</label>
+      <input id="making" type="number" min="0" step="0.001" value="2" inputmode="decimal">
+    </div>
+    <div>
+      <label for="makingType">Making charge type</label>
+      <select id="makingType">
+        <option value="gram" selected>Per gram</option>
+        <option value="fixed">Fixed total</option>
+      </select>
+    </div>
+  </div>
+  <label for="vat">VAT (%)</label>
+  <input id="vat" type="number" min="0" step="0.1" value="10" inputmode="decimal">
+  <button class="primary" onclick="calculate()">Calculate total price</button>
+  <button class="secondary" onclick="resetForm()">Reset</button>
+
+  <div class="result" aria-live="polite">
+    <small>ESTIMATED TOTAL</small>
+    <div class="total" id="total">BHD 530.20</div>
+    <div class="line"><span>Gold value</span><strong id="goldValue">BHD 462.000</strong></div>
+    <div class="line"><span>Making charge</span><strong id="makingValue">BHD 20.000</strong></div>
+    <div class="line"><span>Subtotal</span><strong id="subtotal">BHD 482.000</strong></div>
+    <div class="line"><span>VAT</span><strong id="vatValue">BHD 48.200</strong></div>
+    <div class="line"><span>Estimated price per gram</span><strong id="perGram">BHD 53.020</strong></div>
+  </div>
+</div>
+<div class="card">
+  <strong>How to use it</strong>
+  <p class="hint">Enter the gold rate and weight shown by the jewellery shop. Add the shop's making charge and choose whether it is charged per gram or as one fixed amount. Enter the VAT rate quoted by the shop. The calculator estimates the total.</p>
+  <p class="hint"><b>Important:</b> The default VAT is editable and is only an example. Confirm the applicable VAT and tax treatment with the Bahrain jeweller. This estimate excludes stones, discounts, other fees and any special tax treatment. The app does not fetch live gold rates.</p>
+</div>
+<script>
+const ids=['purity','weight','rate','making','makingType','vat'];
+function val(id){return Math.max(0,Number(document.getElementById(id).value)||0)}
+function money(n){return 'BHD '+n.toFixed(3)}
+function calculate(){
+ const w=val('weight'),r=val('rate'),m=val('making'),v=val('vat');
+ const gold=w*r;
+ const making=document.getElementById('makingType').value==='gram'?w*m:m;
+ const subtotal=gold+making, tax=subtotal*v/100, total=subtotal+tax;
+ document.getElementById('goldValue').textContent=money(gold);
+ document.getElementById('makingValue').textContent=money(making);
+ document.getElementById('subtotal').textContent=money(subtotal);
+ document.getElementById('vatValue').textContent=money(tax);
+ document.getElementById('total').textContent=money(total);
+ document.getElementById('perGram').textContent=money(w?total/w:0);
+}
+function resetForm(){
+ document.getElementById('purity').value='22K';
+ document.getElementById('weight').value='10';
+ document.getElementById('rate').value='46.20';
+ document.getElementById('making').value='2';
+ document.getElementById('makingType').value='gram';
+ document.getElementById('vat').value='10';
+ calculate();
+}
+ids.forEach(id=>document.getElementById(id).addEventListener('input',calculate));
+calculate();
+</script>
+</body>
+</html>
