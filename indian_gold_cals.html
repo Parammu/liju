@@ -1,71 +1,131 @@
 from pathlib import Path
-import zipfile
 
-out = Path("/mnt/data/kerala_gold_price_calculator.html")
-html = r"""<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#123b35"><title>Kerala Gold Price Calculator</title>
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#102a43">
+<title>Indian Gold Price Calculator | Erise</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f6f2;color:#1d2b25;font:16px Arial,sans-serif}
-header{background:#123b35;color:white;padding:23px 18px;text-align:center;border-radius:0 0 18px 18px}
-header h1{font-size:23px;margin:0 0 6px}header p{font-size:13px;color:#d4e4dc;margin:0}
-main{max-width:620px;margin:18px auto;padding:0 14px}.panel{background:white;border:1px solid #d8e2dc;border-radius:16px;padding:18px;margin-bottom:14px}
-.kicker{font-size:11px;font-weight:bold;color:#176b55;letter-spacing:.4px;background:#e6f1eb;display:inline-block;padding:7px 10px;border-radius:20px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;font-weight:600;font-size:14px;margin:13px 0 6px}
-input,select{width:100%;padding:13px;border:1px solid #cbd9d1;border-radius:10px;font-size:16px;background:white;color:#1d2b25}
-button{width:100%;padding:14px;border:0;border-radius:10px;background:#176b55;color:white;font-weight:700;font-size:16px;margin-top:14px}
-button.secondary{background:#eaf1ed;color:#123b35}.result{background:#123b35;color:white}.result .line{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff2b;font-size:14px}
-.total{font-size:30px;font-weight:800;margin:9px 0 13px;color:#f6dfa2}.muted{font-size:12px;line-height:1.5;color:#65736c}
-.branding{text-align:center;padding:13px 8px;color:#65736c;font-size:12px}.branding strong{color:#123b35}.brand{color:#176b55!important}
-@media(max-width:420px){.grid{grid-template-columns:1fr}}
-</style></head><body>
-<header><h1>Kerala Gold Price Calculator</h1><p>Jewellery estimate · INR ₹ · Kerala</p></header>
-<main>
+:root{--navy:#102a43;--navy2:#173f5f;--teal:#16a6a1;--mint:#dff7f1;--gold:#e5b84b;--paper:#f4f7fb;--ink:#182b3a;--muted:#66788a;--line:#dce5ed;--white:#fff;--shadow:0 12px 32px rgba(16,42,67,.09)}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--navy),var(--navy2));color:white;padding:25px 18px 34px;border-bottom:4px solid var(--gold)}
+.wrap{max-width:1000px;margin:auto}.brand{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand small{color:#c8d9e7;letter-spacing:1.6px;font-weight:700}.brand .mark{border:1px solid #55718a;border-radius:20px;padding:7px 12px;color:#f5d88b;font-size:12px}
+h1{font-size:clamp(25px,4vw,36px);margin:17px 0 5px}.sub{margin:0;color:#c8d9e7;font-size:14px}
+main{padding:0 16px 32px;margin-top:-18px}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h2{font-size:18px;margin:0;color:var(--navy)}.hint{font-size:12px;color:var(--muted);margin-top:5px}
+.city-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+select,input{font:inherit;border:1px solid #cbd7e2;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);width:100%;outline:none}
+select:focus,input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(22,166,161,.13)}
+.city-row select{width:auto;min-width:190px}
+.rates{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.rate{border-radius:14px;padding:15px 13px;background:linear-gradient(145deg,#f3fbfa,#e5f5f2);border:1px solid #d5eee8}
+.rate:nth-child(2){background:linear-gradient(145deg,#fff9e9,#f9edce);border-color:#f0dfb0}
+.rate:nth-child(3){background:linear-gradient(145deg,#f2f5ff,#e5eaff);border-color:#dbe2ff}
+.rate:nth-child(4){background:linear-gradient(145deg,#fff3ef,#ffe5dc);border-color:#f6d7cb}
+.karat{font-size:13px;font-weight:800;color:var(--navy)}.price{font-size:clamp(18px,3vw,25px);font-weight:800;margin:9px 0 3px;letter-spacing:-.5px}.unit{font-size:11px;color:var(--muted)}
+.note{font-size:11px;color:var(--muted);line-height:1.5;margin:13px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:12px;font-weight:700;color:#40566a;margin:0 0 7px}
+.full{grid-column:1/-1}.seg{display:flex;gap:8px;flex-wrap:wrap}.seg label{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;background:#fff;cursor:pointer}.seg input{width:auto;accent-color:var(--teal)}
+.btn{border:0;border-radius:11px;background:var(--teal);color:white;font-weight:800;padding:13px 18px;cursor:pointer;font-size:14px}.btn:hover{filter:brightness(.95)}.btn.secondary{background:var(--navy)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.result{background:linear-gradient(120deg,#102a43,#1c5366);border-radius:16px;color:white;padding:18px;margin-top:18px}
+.result h3{margin:0 0 12px;font-size:16px}.rows{display:grid;gap:9px}.rrow{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:#dceaf2}.rrow.total{border-top:1px solid #547184;padding-top:12px;margin-top:3px;font-size:19px;font-weight:800;color:#ffe29a}
+footer{text-align:center;color:#738395;font-size:12px;padding:7px 15px 25px}footer strong{color:var(--navy)}
+@media(max-width:650px){.rates{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.full{grid-column:auto}.panel{padding:16px}.brand{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><small>ERISE • GOLD TOOLS</small><span class="mark">INDIA EDITION</span></div>
+  <h1>Indian Gold Price Calculator</h1><p class="sub">Check reference rates and calculate your jewellery estimate.</p>
+</div></header>
+<main class="wrap">
 <section class="panel">
-<span class="kicker">ENTER JEWELLERY SHOP DETAILS</span>
-<div class="grid">
-<div><label>Gold purity</label><select id="purity"><option value="18">18K</option><option value="20">20K</option><option value="22" selected>22K</option><option value="24">24K</option></select></div>
-<div><label>Weight (grams)</label><input id="weight" type="number" min="0" step="0.001" value="10"></div>
-</div>
-<label>Gold rate (₹ per gram)</label><input id="rate" type="number" min="0" step="0.01" value="0" placeholder="Enter today's Kerala 22K rate">
-<div class="grid">
-<div><label>Making charge</label><input id="making" type="number" min="0" step="0.01" value="0"></div>
-<div><label>Making charge type</label><select id="chargeType"><option value="gram">Per gram</option><option value="percent">Percentage of gold value</option><option value="fixed">Fixed total</option></select></div>
-</div>
-<div class="grid">
-<div><label>Wastage (%)</label><input id="wastage" type="number" min="0" step="0.01" value="0"></div>
-<div><label>GST (%)</label><input id="gst" type="number" min="0" step="0.01" value="3"></div>
-</div>
-<button onclick="calculate()">Calculate total price</button><button class="secondary" onclick="resetForm()">Reset</button>
+ <div class="panel-head">
+  <div><h2>Today’s Gold Rate</h2><div class="hint">Reference dashboard • price per gram</div></div>
+  <div class="city-row"><label for="city" class="hint">Select city</label><select id="city"><option>Kerala</option><option>Chennai</option><option>Bengaluru</option><option>Mumbai</option><option>Delhi</option><option>Hyderabad</option><option>Kolkata</option><option>Pune</option><option>Ahmedabad</option><option>Jaipur</option><option>Coimbatore</option></select></div>
+ </div>
+ <div class="rates">
+  <div class="rate"><div class="karat">24K GOLD</div><div class="price" id="r24">₹13,888</div><div class="unit">per gram</div></div>
+  <div class="rate"><div class="karat">22K GOLD</div><div class="price" id="r22">₹12,730</div><div class="unit">per gram</div></div>
+  <div class="rate"><div class="karat">20K GOLD</div><div class="price" id="r20">₹11,573</div><div class="unit">per gram • indicative</div></div>
+  <div class="rate"><div class="karat">18K GOLD</div><div class="price" id="r18">₹10,416</div><div class="unit">per gram</div></div>
+ </div>
+ <p class="note" id="rateNote">Sample reference figures for Kerala. This HTML currently uses demonstration values; connect a reliable gold-rate API to enable automatic city-wise updates. Actual jeweller rates may differ. 20K is an indicative purity-based estimate.</p>
 </section>
-<section class="panel result">
-<div style="font-size:12px;color:#d4e4dc">ESTIMATED TOTAL</div><div class="total" id="total">₹0.00</div>
-<div class="line"><span>Gold value</span><strong id="gold">₹0.00</strong></div>
-<div class="line"><span>Wastage amount</span><strong id="waste">₹0.00</strong></div>
-<div class="line"><span>Making charge</span><strong id="makingOut">₹0.00</strong></div>
-<div class="line"><span>Subtotal</span><strong id="subtotal">₹0.00</strong></div>
-<div class="line"><span>GST</span><strong id="gstOut">₹0.00</strong></div>
-<div class="line"><span>Final price</span><strong id="final">₹0.00</strong></div>
-<p class="muted" style="color:#d4e4dc">Estimate only. Confirm the current Kerala shop rate, wastage, making charge and tax calculation with the jeweller.</p>
+
+<section class="panel">
+ <div class="panel-head"><div><h2>Jewellery Cost Calculator</h2><div class="hint">Enter the rate you want to use. This rate is independent of the dashboard above.</div></div></div>
+ <div class="grid">
+  <div class="field"><label for="purity">Gold purity</label><select id="purity"><option value="24">24K</option><option value="22" selected>22K</option><option value="20">20K</option><option value="18">18K</option></select></div>
+  <div class="field"><label for="weight">Gold weight (grams)</label><input id="weight" type="number" min="0" step="0.001" value="10"></div>
+  <div class="field"><label for="manualRate">Gold rate (₹ per gram) — manual</label><input id="manualRate" type="number" min="0" step="0.01" value="12730"></div>
+  <div class="field"><label>Making charge type</label><div class="seg">
+   <label><input type="radio" name="makingType" value="gram" checked> ₹ / gram</label>
+   <label><input type="radio" name="makingType" value="percent"> %</label>
+   <label><input type="radio" name="makingType" value="fixed"> Fixed ₹</label>
+  </div></div>
+  <div class="field"><label for="making">Making charge value</label><input id="making" type="number" min="0" step="0.01" value="500"></div>
+  <div class="field"><label for="wastage">Wastage (%)</label><input id="wastage" type="number" min="0" step="0.01" value="0"></div>
+  <div class="field"><label for="gst">GST (%)</label><input id="gst" type="number" min="0" step="0.01" value="3"></div>
+ </div>
+ <div class="actions"><button class="btn" onclick="calculate()">Calculate total</button><button class="btn secondary" onclick="resetCalc()">Reset</button></div>
+ <div class="result" aria-live="polite">
+  <h3>Price breakdown</h3><div class="rows">
+   <div class="rrow"><span>Gold value</span><strong id="goldValue">₹1,27,300.00</strong></div>
+   <div class="rrow"><span>Making charge</span><strong id="makingValue">₹5,000.00</strong></div>
+   <div class="rrow"><span>Wastage value</span><strong id="wastageValue">₹0.00</strong></div>
+   <div class="rrow"><span>GST</span><strong id="gstValue">₹3,969.00</strong></div>
+   <div class="rrow total"><span>Estimated total</span><strong id="totalValue">₹1,36,269.00</strong></div>
+  </div>
+ </div>
+ <p class="note">This is an estimate. GST and the final invoice may be calculated differently by the jeweller depending on applicable rules and billing practices.</p>
 </section>
-<p class="muted">Rate is entered manually; this calculator does not fetch live gold prices. GST is editable and defaults to 3%. This estimate applies GST to the displayed subtotal; actual invoicing may differ by the jeweller's billing method.</p>
-<footer class="branding">Developed by <strong>Liju Thomas</strong> · Organisation: <strong class="brand">Erise</strong></footer>
 </main>
+<footer><strong>Developed by Liju Thomas</strong> | Organisation: Erise</footer>
 <script>
-const ids=['purity','weight','rate','making','chargeType','wastage','gst'];
-function v(id){return Math.max(0,Number(document.getElementById(id).value)||0)}
-function inr(x){return '₹'+x.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+const fmt=n=>'₹'+(Number.isFinite(n)?n:0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 function calculate(){
- const purity=v('purity'),weight=v('weight'),rate=v('rate'),charge=v('making'),wastePct=v('wastage'),gstPct=v('gst');
- const gold=weight*rate*(purity/24),waste=gold*wastePct/100;
- let making=0,mode=document.getElementById('chargeType').value;
- if(mode==='gram')making=weight*charge;else if(mode==='percent')making=gold*charge/100;else making=charge;
- const subtotal=gold+waste+making,gst=subtotal*gstPct/100,total=subtotal+gst;
- for(const [id,val] of Object.entries({gold,waste,makingOut:making,subtotal,gstOut:gst,total,final:total}))document.getElementById(id).textContent=inr(val);
+ const w=Math.max(0,Number(document.getElementById('weight').value)||0);
+ const rate=Math.max(0,Number(document.getElementById('manualRate').value)||0);
+ const making=Math.max(0,Number(document.getElementById('making').value)||0);
+ const wastagePct=Math.max(0,Number(document.getElementById('wastage').value)||0);
+ const gstPct=Math.max(0,Number(document.getElementById('gst').value)||0);
+ const type=document.querySelector('input[name="makingType"]:checked').value;
+ const gold=w*rate;
+ const makingCost=type==='gram'?w*making:(type==='percent'?gold*making/100:making);
+ const wastage=gold*wastagePct/100;
+ const taxable=gold+makingCost+wastage;
+ const gst=taxable*gstPct/100;
+ document.getElementById('goldValue').textContent=fmt(gold);
+ document.getElementById('makingValue').textContent=fmt(makingCost);
+ document.getElementById('wastageValue').textContent=fmt(wastage);
+ document.getElementById('gstValue').textContent=fmt(gst);
+ document.getElementById('totalValue').textContent=fmt(taxable+gst);
 }
-function resetForm(){document.getElementById('purity').value='22';document.getElementById('weight').value='10';document.getElementById('rate').value='0';document.getElementById('making').value='0';document.getElementById('chargeType').value='gram';document.getElementById('wastage').value='0';document.getElementById('gst').value='3';calculate()}
-ids.forEach(id=>document.getElementById(id).addEventListener('input',calculate));calculate();
-</script></body></html>"""
-out.write_text(html, encoding="utf-8")
-print(f"Created {out} ({out.stat().st_size:,} bytes)")
+function resetCalc(){
+ document.getElementById('purity').value='22';document.getElementById('weight').value='10';
+ document.getElementById('manualRate').value='12730';document.getElementById('making').value='500';
+ document.getElementById('wastage').value='0';document.getElementById('gst').value='3';
+ document.querySelector('input[name="makingType"][value="gram"]').checked=true;calculate();
+}
+document.getElementById('purity').addEventListener('change',()=>{
+ const p=document.getElementById('purity').value;
+ const rates={24:13888,22:12730,20:11573,18:10416};
+ document.getElementById('manualRate').value=rates[p];
+});
+document.getElementById('city').addEventListener('change',()=>{
+ document.getElementById('rateNote').textContent='Selected city: '+document.getElementById('city').value+'. Demonstration values are shown until a live city-wise rate API is connected. Calculator rate remains manual and independent.';
+});
+document.querySelectorAll('input').forEach(el=>el.addEventListener('input',calculate));
+document.querySelectorAll('input[name="makingType"]').forEach(el=>el.addEventListener('change',calculate));
+calculate();
+</script>
+</body></html>'''
+
+path = Path("/mnt/data/Indian_Gold_Price_Calculator_Erise.html")
+path.write_text(html, encoding="utf-8")
+print(f"Created: {path} ({path.stat().st_size:,} bytes)")
