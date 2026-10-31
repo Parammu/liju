@@ -1,4 +1,6 @@
-<!doctype html>
+from pathlib import Path
+
+html = r'''<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -22,17 +24,50 @@ button{border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;c
 .line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #ffffff25;font-size:14px}
 .line:last-child{border:0}.hint{font-size:12px;color:#64756e;line-height:1.5}
 .pill{display:inline-block;background:#e4f1eb;color:#17523f;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700}
-@media(max-width:380px){.grid{grid-template-columns:1fr}.total{font-size:28px}}
+.rate-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.rate-head select{width:auto;min-width:145px;padding:10px}
+.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}
+.rate-box{background:#eaf4ef;border:1px solid #d4e7dd;border-radius:12px;padding:11px 8px;text-align:center}
+.rate-box:nth-child(2){background:#fff5df;border-color:#f1e1b9}
+.rate-box:nth-child(3){background:#edf1fb;border-color:#dce3f4}
+.rate-box:nth-child(4){background:#f8ece8;border-color:#efdbd3}
+.rate-box b{display:block;font-size:12px;color:#315248}
+.rate-box strong{display:block;font-size:clamp(14px,3.7vw,18px);margin:7px 0 3px;overflow-wrap:anywhere}
+.rate-box small{font-size:10px;color:#64756e}
+.rate-status{margin:12px 0 0;font-size:11px;color:#64756e;line-height:1.5}
+.refresh{background:#176b55;color:#fff;padding:9px 12px;font-size:12px}
+@media(max-width:380px){.grid{grid-template-columns:1fr}.total{font-size:28px}.rate-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <header>
   <h1>Bahrain Gold Calculator</h1>
-  <p>Jewellery estimate · BHD · Works offline</p>
+  <p>Gold spot-rate reference · Manual jewellery estimate · Works offline for calculation</p>
 </header>
 
 <div class="card">
+  <div class="rate-head">
+    <div><span class="pill">INDICATIVE LIVE SPOT RATE</span><p class="hint" style="margin:7px 0 0">Choose a market currency</p></div>
+    <select id="market" aria-label="Choose market">
+      <option value="BHD" selected>Bahrain (BHD)</option>
+      <option value="AED">Dubai (AED)</option>
+      <option value="USD">US Dollar (USD)</option>
+    </select>
+  </div>
+  <div class="rate-grid">
+    <div class="rate-box"><b>24K GOLD</b><strong id="live24">Loading…</strong><small id="unit24">per gram</small></div>
+    <div class="rate-box"><b>22K GOLD</b><strong id="live22">Loading…</strong><small id="unit22">per gram</small></div>
+    <div class="rate-box"><b>21K GOLD</b><strong id="live21">Loading…</strong><small id="unit21">per gram</small></div>
+    <div class="rate-box"><b>18K GOLD</b><strong id="live18">Loading…</strong><small id="unit18">per gram</small></div>
+  </div>
+  <p class="rate-status" id="rateStatus">Fetching the latest indicative spot price…</p>
+  <button class="refresh" style="margin-top:10px" onclick="loadLiveRates()">Refresh live rate</button>
+  <p class="hint">These are indicative international spot-price conversions, not guaranteed local jewellery-shop selling rates. Local premiums, making charges and taxes may differ. Data by <a href="https://goldprice.corgano.com/" target="_blank" rel="noopener">Corgano Gold Price API</a>.</p>
+</div>
+
+<div class="card">
   <span class="pill">ENTER SHOP QUOTE DETAILS</span>
+  <p class="hint">The calculator rate below is manual. Live rates above will never change this value automatically.</p>
   <div class="grid">
     <div>
       <label for="purity">Gold purity</label>
@@ -45,7 +80,7 @@ button{border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;c
       <input id="weight" type="number" min="0" step="0.001" value="10" inputmode="decimal">
     </div>
   </div>
-  <label for="rate">Gold rate (BHD per gram)</label>
+  <label for="rate">Gold rate (BHD per gram) — enter manually</label>
   <input id="rate" type="number" min="0" step="0.001" value="46.20" inputmode="decimal">
   <div class="grid">
     <div>
@@ -67,7 +102,7 @@ button{border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;c
 
   <div class="result" aria-live="polite">
     <small>ESTIMATED TOTAL</small>
-    <div class="total" id="total">BHD 530.20</div>
+    <div class="total" id="total">BHD 530.200</div>
     <div class="line"><span>Gold value</span><strong id="goldValue">BHD 462.000</strong></div>
     <div class="line"><span>Making charge</span><strong id="makingValue">BHD 20.000</strong></div>
     <div class="line"><span>Subtotal</span><strong id="subtotal">BHD 482.000</strong></div>
@@ -77,8 +112,8 @@ button{border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;c
 </div>
 <div class="card">
   <strong>How to use it</strong>
-  <p class="hint">Enter the gold rate and weight shown by the jewellery shop. Add the shop's making charge and choose whether it is charged per gram or as one fixed amount. Enter the VAT rate quoted by the shop. The calculator estimates the total.</p>
-  <p class="hint"><b>Important:</b> The default VAT is editable and is only an example. Confirm the applicable VAT and tax treatment with the Bahrain jeweller. This estimate excludes stones, discounts, other fees and any special tax treatment. The app does not fetch live gold rates.</p>
+  <p class="hint">Choose Bahrain, Dubai or US Dollar to view the indicative live spot rate per gram for 24K, 22K, 21K and 18K. Enter the jewellery shop's quoted rate manually in the calculator. Add the shop's making charge and VAT. The live dashboard and calculator are independent.</p>
+  <p class="hint"><b>Important:</b> Live rates require an internet connection. The calculator continues to work offline. If the rate service is unavailable, the dashboard will show an error and you can try Refresh. Confirm the final rate, VAT and tax treatment with the jeweller. This estimate excludes stones, discounts and other fees.</p>
 </div>
 <script>
 const ids=['purity','weight','rate','making','makingType','vat'];
@@ -105,8 +140,56 @@ function resetForm(){
  document.getElementById('vat').value='10';
  calculate();
 }
+function findNumber(obj, keys){
+ if(!obj || typeof obj!=='object') return null;
+ for(const key of keys){if(obj[key]!==undefined && Number.isFinite(Number(obj[key]))) return Number(obj[key]);}
+ for(const value of Object.values(obj)){if(value && typeof value==='object'){const found=findNumber(value,keys);if(found!==null)return found;}}
+ return null;
+}
+async function loadLiveRates(){
+ const currency=document.getElementById('market').value;
+ const status=document.getElementById('rateStatus');
+ status.textContent='Updating indicative '+currency+' spot rates…';
+ try{
+  const response=await fetch('https://goldprice.corgano.com/api/v1/latest?currency='+encodeURIComponent(currency),{cache:'no-store'});
+  if(!response.ok) throw new Error('Rate service returned '+response.status);
+  const data=await response.json();
+  const currencyData=data[currency] || data.currencies?.[currency] || data;
+  const keys24=['price_per_gram_24k','24k_per_gram','24k','gram_24k','price_24k'];
+  const keys22=['price_per_gram_22k','22k_per_gram','22k','gram_22k','price_22k'];
+  const keys21=['price_per_gram_21k','21k_per_gram','21k','gram_21k','price_21k'];
+  const keys18=['price_per_gram_18k','18k_per_gram','18k','gram_18k','price_18k'];
+  let p24=findNumber(currencyData,keys24);
+  let p22=findNumber(currencyData,keys22);
+  let p21=findNumber(currencyData,keys21);
+  let p18=findNumber(currencyData,keys18);
+  if(p24===null){
+    const perGram=findNumber(currencyData,['price_per_gram','gram','per_gram','price_gram']);
+    if(perGram!==null)p24=perGram;
+  }
+  if(p24===null) throw new Error('Could not read the 24K per-gram value from the rate response');
+  if(p22===null)p22=p24*22/24;
+  if(p21===null)p21=p24*21/24;
+  if(p18===null)p18=p24*18/24;
+  const symbol=currency==='BHD'?'BHD':currency==='AED'?'AED':'USD';
+  const format=n=>symbol+' '+n.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3});
+  [['live24',p24],['live22',p22],['live21',p21],['live18',p18]].forEach(([id,n])=>document.getElementById(id).textContent=format(n));
+  document.querySelectorAll('[id^="unit"]').forEach(el=>el.textContent='per gram');
+  const stamp=data.updated_at||data.updatedAt||data.timestamp||data.last_updated||'';
+  status.textContent='Last refreshed: '+(stamp?new Date(stamp).toLocaleString():'just now')+'. Indicative spot conversion; local shop prices may differ.';
+ }catch(error){
+  status.textContent='Live rate unavailable: '+error.message+'. Check your internet connection and tap Refresh.';
+  ['live24','live22','live21','live18'].forEach(id=>document.getElementById(id).textContent='Unavailable');
+ }
+}
+document.getElementById('market').addEventListener('change',loadLiveRates);
 ids.forEach(id=>document.getElementById(id).addEventListener('input',calculate));
 calculate();
+loadLiveRates();
 </script>
 </body>
-</html>
+</html>'''
+
+path = Path("/mnt/data/Bahrain_Gold_Calculator_Live_Rates.html")
+path.write_text(html, encoding="utf-8")
+print(f"Created: {path} ({path.stat().st_size:,} bytes)")
