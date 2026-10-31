@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bank Loan Interest Calculator | Erise</title>
+<style>
+:root{--bg:#faf7f0;--card:#ffffff;--text:#1d1b16;--muted:#6b665a;--accent:#b8860b;--accent2:#8a6508;--border:#e6dfcc;--on:#ffffff;--int:#c0562b;--soft:#f3ecd9;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14120d;--card:#1f1c14;--text:#f3eee0;--muted:#a79f8a;--accent:#e0b648;--accent2:#c99a22;--border:#3a3424;--on:#14120d;--int:#e07a4d;--soft:#2a2619}}
+:root[data-theme="dark"]{--bg:#14120d;--card:#1f1c14;--text:#f3eee0;--muted:#a79f8a;--accent:#e0b648;--accent2:#c99a22;--border:#3a3424;--on:#14120d;--int:#e07a4d;--soft:#2a2619}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding:20px}
+.home{display:inline-block;color:var(--accent2);text-decoration:none;font-weight:600;margin-bottom:8px}
+h1{margin:6px 0 4px;font-size:clamp(1.7rem,5vw,2.4rem);color:var(--accent)}
+.lead{color:var(--muted);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px}
+h2{font-size:1.1rem;margin:0 0 14px}
+.cur-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cur{padding:12px;border:1px solid var(--border);background:var(--bg);border-radius:12px;cursor:pointer;text-align:left;color:var(--text);font:inherit}
+.cur b{display:block;font-size:1.05rem}
+.cur span{font-size:.85rem;color:var(--muted)}
+.cur:hover,.cur:focus-visible{border-color:var(--accent);outline:none}
+.chosen{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.chosen b{color:var(--accent)}
+.link{background:none;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 14px;cursor:pointer;font:inherit}
+.link:hover{border-color:var(--accent)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:4px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:8px}
+.row input{flex:1}.row select{width:110px}
+.err{color:var(--int);margin:12px 0 0;min-height:1.2em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.stat{background:var(--soft);border-radius:12px;padding:14px}
+.stat small{display:block;color:var(--muted)}
+.stat strong{font-size:1.25rem;word-break:break-word}
+.stat.main{background:var(--accent);color:var(--on)}
+.stat.main small{color:inherit;opacity:.85}
+.split{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.donut{width:170px;height:170px;border-radius:50%;flex:none;position:relative}
+.donut::after{content:"";position:absolute;inset:32px;background:var(--card);border-radius:50%}
+.legend p{margin:6px 0}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:560px}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;background:var(--soft);position:sticky;top:0}
+details summary{cursor:pointer;font-weight:600;margin-bottom:12px}
+.note{color:var(--muted);font-size:.88rem}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="home" href="index.html">← Home</a>
+<h1>Bank Loan Interest Calculator</h1>
+<p class="lead">Work out your monthly payment, total interest and full repayment schedule.</p>
+
+<section class="card" id="step1">
+<h2>Step 1: Choose your currency</h2>
+<div class="cur-grid" id="curGrid"></div>
+</section>
+
+<div id="app" hidden>
+<section class="card chosen">
+<div>Currency: <b id="curName"></b></div>
+<button class="link" id="change" type="button">Change currency</button>
+</section>
+
+<section class="card">
+<h2>Step 2: Enter loan details</h2>
+<div class="form">
+<div><label for="amt">Loan amount</label><input id="amt" type="number" min="0" step="any" value="10000"></div>
+<div><label for="rate">Interest rate (% per year)</label><input id="rate" type="number" min="0" step="any" value="7.5"></div>
+<div><label for="ten">Loan period</label><div class="row"><input id="ten" type="number" min="1" step="1" value="5"><select id="unit"><option value="y">Years</option><option value="m">Months</option></select></div></div>
+<div><label for="type">Interest type</label><select id="type"><option value="red">Reducing balance (most banks)</option><option value="flat">Flat rate</option></select></div>
+<div><label for="fee">Processing fee (% of loan, optional)</label><input id="fee" type="number" min="0" step="any" value="0"></div>
+<div><label for="start">First payment month</label><input id="start" type="month"></div>
+</div>
+<p class="err" id="err" role="alert"></p>
+</section>
+
+<div id="out">
+<section class="card">
+<h2>Your results</h2>
+<div class="stats">
+<div class="stat main"><small>Monthly payment (EMI)</small><strong id="rEmi"></strong></div>
+<div class="stat"><small>Total interest</small><strong id="rInt"></strong></div>
+<div class="stat"><small>Total payment (loan + interest)</small><strong id="rTot"></strong></div>
+<div class="stat"><small>Processing fee</small><strong id="rFee"></strong></div>
+<div class="stat"><small>Total cost including fee</small><strong id="rCost"></strong></div>
+<div class="stat"><small>Number of payments</small><strong id="rN"></strong></div>
+<div class="stat"><small>Last payment</small><strong id="rEnd"></strong></div>
+<div class="stat"><small>Interest as % of loan</small><strong id="rPct"></strong></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Where your money goes</h2>
+<div class="split">
+<div class="donut" id="donut" role="img" aria-label="Principal versus interest chart"></div>
+<div class="legend">
+<p><span class="dot" style="background:var(--accent)"></span>Loan amount: <b id="lgP"></b> (<span id="lgPp"></span>)</p>
+<p><span class="dot" style="background:var(--int)"></span>Interest: <b id="lgI"></b> (<span id="lgIp"></span>)</p>
+</div>
+</div>
+</section>
+
+<section class="card">
+<h2>Year-by-year summary</h2>
+<div class="tw"><table><thead><tr><th>Year</th><th>Principal paid</th><th>Interest paid</th><th>Total paid</th><th>Balance left</th></tr></thead><tbody id="yBody"></tbody></table></div>
+</section>
+
+<section class="card">
+<details>
+<summary>Show full monthly schedule</summary>
+<div class="tw" style="max-height:480px;overflow:auto"><table><thead><tr><th>Month</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="mBody"></tbody></table></div>
+</details>
+<p class="note">Results are estimates. Your bank’s figures may differ slightly because of rounding, fees and how it counts days.</p>
+</section>
+</div>
+</div>
+</div>
+
+<script>
+var CUR=[["BHD","Bahraini Dinar","BD",3],["INR","Indian Rupee","₹",2],["USD","US Dollar","$",2],["AED","UAE Dirham","AED",2],["SAR","Saudi Riyal","SAR",2],["KWD","Kuwaiti Dinar","KD",3],["OMR","Omani Rial","OMR",3],["QAR","Qatari Riyal","QAR",2],["EUR","Euro","€",2],["GBP","British Pound","£",2]];
+var cur=null;
+var $=function(i){return document.getElementById(i)};
+var grid=$("curGrid");
+CUR.forEach(function(c,i){
+  var b=document.createElement("button");b.type="button";b.className="cur";
+  b.innerHTML="<b>"+c[0]+"</b><span>"+c[1]+"</span>";
+  b.onclick=function(){pick(i)};grid.appendChild(b);
+});
+function pick(i){
+  cur={code:CUR[i][0],name:CUR[i][1],sym:CUR[i][2],dec:CUR[i][3]};
+  $("curName").textContent=cur.code+" – "+cur.name;
+  $("step1").hidden=true;$("app").hidden=false;calc();
+}
+$("change").onclick=function(){$("app").hidden=true;$("step1").hidden=false;};
+var d=new Date();$("start").value=d.getFullYear()+"-"+String(d.getMonth()+2>12?1:d.getMonth()+2).padStart(2,"0");
+if(d.getMonth()+2>12)$("start").value=(d.getFullYear()+1)+"-01";
+function f(n){return cur.code+" "+n.toLocaleString("en-US",{minimumFractionDigits:cur.dec,maximumFractionDigits:cur.dec})}
+function monthLabel(base,i){var x=new Date(base.y,base.m+i,1);return x.toLocaleString("en-US",{month:"short",year:"numeric"})}
+function calc(){
+  if(!cur)return;
+  var P=+$("amt").value,R=+$("rate").value,T=+$("ten").value,F=+$("fee").value||0;
+  var n=$("unit").value==="y"?Math.round(T*12):Math.round(T);
+  var err=$("err");
+  if(!(P>0)||!(T>0)||n<1||R<0||F<0){err.textContent="Enter a loan amount and loan period greater than 0, and a rate of 0 or more.";$("out").hidden=true;return}
+  err.textContent="";$("out").hidden=false;
+  var r=R/1200,emi,sched=[],bal=P,totI=0;
+  var sv=$("start").value.split("-");var base=sv.length===2?{y:+sv[0],m:+sv[1]-1}:{y:d.getFullYear(),m:d.getMonth()+1};
+  if($("type").value==="flat"){
+    var ti=P*R/100*(n/12);emi=(P+ti)/n;
+    for(var i=0;i<n;i++){var pr=P/n,it=ti/n;bal=Math.max(bal-pr,0);sched.push([pr,it,bal]);totI+=it}
+  }else{
+    emi=r===0?P/n:P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+    for(var j=0;j<n;j++){var it2=bal*r,pr2=emi-it2;if(j===n-1)pr2=bal;bal=Math.max(bal-pr2,0);sched.push([pr2,it2,bal]);totI+=it2}
+  }
+  var tot=P+totI,fee=P*F/100;
+  $("rEmi").textContent=f(emi);$("rInt").textContent=f(totI);$("rTot").textContent=f(tot);
+  $("rFee").textContent=f(fee);$("rCost").textContent=f(tot+fee);$("rN").textContent=n+" months";
+  $("rEnd").textContent=monthLabel(base,n-1);$("rPct").textContent=(totI/P*100).toFixed(1)+"%";
+  var pp=P/tot*100,ip=100-pp;
+  $("donut").style.background="conic-gradient(var(--accent) 0 "+pp+"%,var(--int) "+pp+"% 100%)";
+  $("lgP").textContent=f(P);$("lgI").textContent=f(totI);
+  $("lgPp").textContent=pp.toFixed(1)+"%";$("lgIp").textContent=ip.toFixed(1)+"%";
+  var mb="",yb="",yp=0,yi=0,m;
+  for(m=0;m<n;m++){
+    var s=sched[m];yp+=s[0];yi+=s[1];
+    mb+="<tr><td>"+monthLabel(base,m)+"</td><td>"+f(emi)+"</td><td>"+f(s[0])+"</td><td>"+f(s[1])+"</td><td>"+f(s[2])+"</td></tr>";
+    if((m+1)%12===0||m===n-1){
+      yb+="<tr><td>Year "+Math.ceil((m+1)/12)+"</td><td>"+f(yp)+"</td><td>"+f(yi)+"</td><td>"+f(yp+yi)+"</td><td>"+f(s[2])+"</td></tr>";yp=0;yi=0;
+    }
+  }
+  $("yBody").innerHTML=yb;$("mBody").innerHTML=mb;
+}
+["amt","rate","ten","unit","type","fee","start"].forEach(function(i){$(i).addEventListener("input",calc)});
+</script>
+</body>
+</html>
