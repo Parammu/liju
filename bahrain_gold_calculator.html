@@ -55,4 +55,103 @@ button{border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:700;c
   </div>
   <div class="rate-grid">
     <div class="rate-box"><b>24K GOLD</b><strong id="r24">49.400</strong><small id="currency">BHD / gram</small></div>
-    <div class="rate-box
+    <div class="rate-box"><b>22K GOLD</b><strong id="r22">46.200</strong><small id="currency2">BHD / gram</small></div>
+    <div class="rate-box"><b>21K GOLD</b><strong id="r21">44.100</strong><small id="currency3">BHD / gram</small></div>
+    <div class="rate-box"><b>18K GOLD</b><strong id="r18">37.400</strong><small id="currency4">BHD / gram</small></div>
+  </div>
+  <p class="rate-meta" id="rateInfo">Bahrain local market reference · 31 October 2026 · Source: Khaleej Times. Published rates can change during the day and may vary by jeweller.</p>
+  <a class="sourcebtn" id="sourceLink" href="https://www.khaleejtimes.com/gold-forex/bahrain-gold-rates" target="_blank" rel="noopener">Open latest Bahrain rates ↗</a>
+  <p class="hint">Note: this standalone HTML displays the latest published reference values entered in the file. It does not scrape third-party websites or pretend to refresh automatically. Tap the source link to check the current published rate. Automatic updates require a verified provider API or a small server-side service.</p>
+</section>
+
+<div class="card">
+  <span class="pill">ENTER SHOP QUOTE DETAILS</span>
+  <p class="hint">The calculator rate is manual and independent of the market-rate panel above. Changing Bahrain/Dubai will not alter your calculation.</p>
+  <div class="grid">
+    <div>
+      <label for="purity">Gold purity</label>
+      <select id="purity">
+        <option>18K</option><option>21K</option><option selected>22K</option><option>24K</option>
+      </select>
+    </div>
+    <div>
+      <label for="weight">Weight (grams)</label>
+      <input id="weight" type="number" min="0" step="0.001" value="10" inputmode="decimal">
+    </div>
+  </div>
+  <label for="rate">Gold rate (BHD per gram) — enter manually</label>
+  <input id="rate" type="number" min="0" step="0.001" value="46.20" inputmode="decimal">
+  <div class="grid">
+    <div>
+      <label for="making">Making charge</label>
+      <input id="making" type="number" min="0" step="0.001" value="2" inputmode="decimal">
+    </div>
+    <div>
+      <label for="makingType">Making charge type</label>
+      <select id="makingType">
+        <option value="gram" selected>Per gram</option>
+        <option value="fixed">Fixed total</option>
+      </select>
+    </div>
+  </div>
+  <label for="vat">VAT (%)</label>
+  <input id="vat" type="number" min="0" step="0.1" value="10" inputmode="decimal">
+  <button class="primary" onclick="calculate()">Calculate total price</button>
+  <button class="secondary" onclick="resetForm()">Reset</button>
+  <div class="result" aria-live="polite">
+    <small>ESTIMATED TOTAL</small>
+    <div class="total" id="total">BHD 530.200</div>
+    <div class="line"><span>Gold value</span><strong id="goldValue">BHD 462.000</strong></div>
+    <div class="line"><span>Making charge</span><strong id="makingValue">BHD 20.000</strong></div>
+    <div class="line"><span>Subtotal</span><strong id="subtotal">BHD 482.000</strong></div>
+    <div class="line"><span>VAT</span><strong id="vatValue">BHD 48.200</strong></div>
+    <div class="line"><span>Estimated price per gram</span><strong id="perGram">BHD 53.020</strong></div>
+  </div>
+</div>
+<div class="card">
+  <strong>How to use it</strong>
+  <p class="hint">Select Bahrain or Dubai to view the latest reference rates stored in this file. Check the linked source for the current published rate, then manually enter the jewellery shop's quoted BHD rate in the calculator. Add making charge and the VAT rate quoted by the shop.</p>
+  <p class="hint"><b>Important:</b> The default VAT is editable and is only an example. Confirm applicable VAT and tax treatment with the jeweller. This estimate excludes stones, discounts, other fees and special tax treatment.</p>
+</div>
+<script>
+const marketRates={
+ BH:{currency:'BHD',values:{24:'49.400',22:'46.200',21:'44.100',18:'37.400'},date:'31 October 2026',source:'Khaleej Times',url:'https://www.khaleejtimes.com/gold-forex/bahrain-gold-rates',label:'Bahrain local market reference'},
+ DXB:{currency:'AED',values:{24:'467.00',22:'432.50',21:'414.50',18:'355.50'},date:'31 October 2026, morning rate',source:'Dubai Gold & Jewellery Group rate as reported by GoldTrack UAE',url:'https://goldtrackuae.com/dubai',label:'Dubai local jewellery-market reference'}
+};
+function showMarket(){
+ const key=document.getElementById('market').value, d=marketRates[key];
+ ['24','22','21','18'].forEach(k=>document.getElementById('r'+k).textContent=d.values[k]);
+ ['currency','currency2','currency3','currency4'].forEach(id=>document.getElementById(id).textContent=d.currency+' / gram');
+ document.getElementById('rateInfo').textContent=d.label+' · '+d.date+' · Source: '+d.source+'. Published rates can change during the day and may vary by jeweller.';
+ document.getElementById('sourceLink').href=d.url;
+ document.getElementById('sourceLink').textContent='Open latest '+(key==='BH'?'Bahrain':'Dubai')+' rates ↗';
+}
+const ids=['purity','weight','rate','making','makingType','vat'];
+function val(id){return Math.max(0,Number(document.getElementById(id).value)||0)}
+function money(n){return 'BHD '+n.toFixed(3)}
+function calculate(){
+ const w=val('weight'),r=val('rate'),m=val('making'),v=val('vat');
+ const gold=w*r;
+ const making=document.getElementById('makingType').value==='gram'?w*m:m;
+ const subtotal=gold+making, tax=subtotal*v/100, total=subtotal+tax;
+ document.getElementById('goldValue').textContent=money(gold);
+ document.getElementById('makingValue').textContent=money(making);
+ document.getElementById('subtotal').textContent=money(subtotal);
+ document.getElementById('vatValue').textContent=money(tax);
+ document.getElementById('total').textContent=money(total);
+ document.getElementById('perGram').textContent=money(w?total/w:0);
+}
+function resetForm(){
+ document.getElementById('purity').value='22K';document.getElementById('weight').value='10';
+ document.getElementById('rate').value='46.20';document.getElementById('making').value='2';
+ document.getElementById('makingType').value='gram';document.getElementById('vat').value='10';calculate();
+}
+ids.forEach(id=>document.getElementById(id).addEventListener('input',calculate));
+calculate();showMarket();
+</script>
+</body>
+</html>'''
+
+path = Path("/mnt/data/Bahrain_Gold_Calculator_Local_Market_Rates.html")
+path.write_text(html, encoding="utf-8")
+print(f"Created: {path} ({path.stat().st_size:,} bytes)")
