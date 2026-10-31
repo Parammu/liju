@@ -1,0 +1,71 @@
+from pathlib import Path
+import zipfile
+
+out = Path("/mnt/data/kerala_gold_price_calculator.html")
+html = r"""<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b35"><title>Kerala Gold Price Calculator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6f2;color:#1d2b25;font:16px Arial,sans-serif}
+header{background:#123b35;color:white;padding:23px 18px;text-align:center;border-radius:0 0 18px 18px}
+header h1{font-size:23px;margin:0 0 6px}header p{font-size:13px;color:#d4e4dc;margin:0}
+main{max-width:620px;margin:18px auto;padding:0 14px}.panel{background:white;border:1px solid #d8e2dc;border-radius:16px;padding:18px;margin-bottom:14px}
+.kicker{font-size:11px;font-weight:bold;color:#176b55;letter-spacing:.4px;background:#e6f1eb;display:inline-block;padding:7px 10px;border-radius:20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;font-weight:600;font-size:14px;margin:13px 0 6px}
+input,select{width:100%;padding:13px;border:1px solid #cbd9d1;border-radius:10px;font-size:16px;background:white;color:#1d2b25}
+button{width:100%;padding:14px;border:0;border-radius:10px;background:#176b55;color:white;font-weight:700;font-size:16px;margin-top:14px}
+button.secondary{background:#eaf1ed;color:#123b35}.result{background:#123b35;color:white}.result .line{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #ffffff2b;font-size:14px}
+.total{font-size:30px;font-weight:800;margin:9px 0 13px;color:#f6dfa2}.muted{font-size:12px;line-height:1.5;color:#65736c}
+.branding{text-align:center;padding:13px 8px;color:#65736c;font-size:12px}.branding strong{color:#123b35}.brand{color:#176b55!important}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+</style></head><body>
+<header><h1>Kerala Gold Price Calculator</h1><p>Jewellery estimate · INR ₹ · Kerala</p></header>
+<main>
+<section class="panel">
+<span class="kicker">ENTER JEWELLERY SHOP DETAILS</span>
+<div class="grid">
+<div><label>Gold purity</label><select id="purity"><option value="18">18K</option><option value="20">20K</option><option value="22" selected>22K</option><option value="24">24K</option></select></div>
+<div><label>Weight (grams)</label><input id="weight" type="number" min="0" step="0.001" value="10"></div>
+</div>
+<label>Gold rate (₹ per gram)</label><input id="rate" type="number" min="0" step="0.01" value="0" placeholder="Enter today's Kerala 22K rate">
+<div class="grid">
+<div><label>Making charge</label><input id="making" type="number" min="0" step="0.01" value="0"></div>
+<div><label>Making charge type</label><select id="chargeType"><option value="gram">Per gram</option><option value="percent">Percentage of gold value</option><option value="fixed">Fixed total</option></select></div>
+</div>
+<div class="grid">
+<div><label>Wastage (%)</label><input id="wastage" type="number" min="0" step="0.01" value="0"></div>
+<div><label>GST (%)</label><input id="gst" type="number" min="0" step="0.01" value="3"></div>
+</div>
+<button onclick="calculate()">Calculate total price</button><button class="secondary" onclick="resetForm()">Reset</button>
+</section>
+<section class="panel result">
+<div style="font-size:12px;color:#d4e4dc">ESTIMATED TOTAL</div><div class="total" id="total">₹0.00</div>
+<div class="line"><span>Gold value</span><strong id="gold">₹0.00</strong></div>
+<div class="line"><span>Wastage amount</span><strong id="waste">₹0.00</strong></div>
+<div class="line"><span>Making charge</span><strong id="makingOut">₹0.00</strong></div>
+<div class="line"><span>Subtotal</span><strong id="subtotal">₹0.00</strong></div>
+<div class="line"><span>GST</span><strong id="gstOut">₹0.00</strong></div>
+<div class="line"><span>Final price</span><strong id="final">₹0.00</strong></div>
+<p class="muted" style="color:#d4e4dc">Estimate only. Confirm the current Kerala shop rate, wastage, making charge and tax calculation with the jeweller.</p>
+</section>
+<p class="muted">Rate is entered manually; this calculator does not fetch live gold prices. GST is editable and defaults to 3%. This estimate applies GST to the displayed subtotal; actual invoicing may differ by the jeweller's billing method.</p>
+<footer class="branding">Developed by <strong>Liju Thomas</strong> · Organisation: <strong class="brand">Erise</strong></footer>
+</main>
+<script>
+const ids=['purity','weight','rate','making','chargeType','wastage','gst'];
+function v(id){return Math.max(0,Number(document.getElementById(id).value)||0)}
+function inr(x){return '₹'+x.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function calculate(){
+ const purity=v('purity'),weight=v('weight'),rate=v('rate'),charge=v('making'),wastePct=v('wastage'),gstPct=v('gst');
+ const gold=weight*rate*(purity/24),waste=gold*wastePct/100;
+ let making=0,mode=document.getElementById('chargeType').value;
+ if(mode==='gram')making=weight*charge;else if(mode==='percent')making=gold*charge/100;else making=charge;
+ const subtotal=gold+waste+making,gst=subtotal*gstPct/100,total=subtotal+gst;
+ for(const [id,val] of Object.entries({gold,waste,makingOut:making,subtotal,gstOut:gst,total,final:total}))document.getElementById(id).textContent=inr(val);
+}
+function resetForm(){document.getElementById('purity').value='22';document.getElementById('weight').value='10';document.getElementById('rate').value='0';document.getElementById('making').value='0';document.getElementById('chargeType').value='gram';document.getElementById('wastage').value='0';document.getElementById('gst').value='3';calculate()}
+ids.forEach(id=>document.getElementById(id).addEventListener('input',calculate));calculate();
+</script></body></html>"""
+out.write_text(html, encoding="utf-8")
+print(f"Created {out} ({out.stat().st_size:,} bytes)")
