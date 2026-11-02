@@ -1,2 +1,0 @@
-# liju
-my persional
