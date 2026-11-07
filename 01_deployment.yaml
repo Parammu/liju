@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: nginx-dpt
 spec:
-  replicas: 3
+  replicas: 6889
   selector:
     matchLabels:
       app: nginx
